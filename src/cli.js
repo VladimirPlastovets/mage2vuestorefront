@@ -110,6 +110,50 @@ const reindexProductCategories = (adapterName) => {
   });
 }
 
+const reindexCmsPages = (adapterName, removeNonExistent) => {
+  return new Promise((resolve, reject) => {
+    let adapter = factory.getAdapter(adapterName, 'cms_page');
+    let tsk = new Date().getTime();
+
+    adapter.cleanUp(tsk);
+
+    adapter.run({
+      transaction_key: tsk,
+      done_callback: () => {
+        if (removeNonExistent) {
+          adapter.cleanUp(tsk);
+        }
+
+        logger.info('Task done! Exiting in 30s...');
+        setTimeout(process.exit, TIME_TO_EXIT); // let ES commit all changes made
+        resolve();
+      }
+    });
+  });
+}
+
+const reindexCmsBlocks = (adapterName, removeNonExistent) => {
+  return new Promise((resolve, reject) => {
+    let adapter = factory.getAdapter(adapterName, 'cms_block');
+    let tsk = new Date().getTime();
+
+    adapter.cleanUp(tsk);
+
+    adapter.run({
+      transaction_key: tsk,
+      done_callback: () => {
+        if (removeNonExistent) {
+          adapter.cleanUp(tsk);
+        }
+
+        logger.info('Task done! Exiting in 30s...');
+        setTimeout(process.exit, TIME_TO_EXIT); // let ES commit all changes made
+        resolve();
+      }
+    });
+  });
+}
+
 function cleanup(adapterName, cleanupType, transactionKey) {
   let adapter = factory.getAdapter(adapterName, cleanupType);
   let tsk = transactionKey;
@@ -374,6 +418,32 @@ program
   .option('--removeNonExistent <removeNonExistent>', 'remove non existent products', false)
   .action(async (cmd) => {
     await reindexTaxRules(cmd.adapter, cmd.removeNonExistent);
+  })
+
+  program
+  .command('cmspages')
+  .option('--adapter <adapter>', 'name of the adapter', 'magento')
+  .option('--removeNonExistent <removeNonExistent>', 'remove non existent cms page', false)
+  .action(async (cmd) => {
+    await reindexCmsPages(cmd.adapter, cmd.removeNonExistent);
+  })
+
+  program
+  .command('cmsblocks')
+  .option('--adapter <adapter>', 'name of the adapter', 'magento')
+  .option('--removeNonExistent <removeNonExistent>', 'remove non existent cms block', false)
+  .action(async (cmd) => {
+    await reindexCmsBlocks(cmd.adapter, cmd.removeNonExistent);
+  })
+
+  program
+  .command('cms')
+  .option('--adapter <adapter>', 'name of the adapter', 'magento')
+  .action(async (cmd) => {
+    await reindexCmsPages(cmd.adapter, cmd.removeNonExistent);
+  })
+  .action(async (cmd) => {
+    await reindexCmsBlocks(cmd.adapter, cmd.removeNonExistent);
   })
 
 program

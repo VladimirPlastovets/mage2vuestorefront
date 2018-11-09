@@ -15,6 +15,8 @@ var taxRules = require('./lib/tax_rules');
 var stockItems = require('./lib/stock_items');
 var productLinks = require('./lib/product_links');
 var reviews = require('./lib/reviews');
+var cmsPages = require('./lib/cms_pages');
+var cmsBlocks = require('./lib/cms_blocks');
 
 const MAGENTO_API_VERSION = 'V1';
 
@@ -39,6 +41,8 @@ module.exports.Magento2Client = function (options) {
     instance.bundleOptions = bundleOptions(client);
     instance.productLinks = productLinks(client);
     instance.reviews = reviews(client);
+    instance.cmsPages = cmsPages(client);
+    instance.cmsBlocks = cmsBlocks(client);
 
     return instance;
 }
